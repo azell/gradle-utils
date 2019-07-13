@@ -1,0 +1,140 @@
+#!/usr/bin/env ruby
+
+require 'json'
+require 'logger'
+
+LOGGER            = Logger.new STDOUT
+IMPORT_STATEMENT  = /\bimport\s+(?:static\s+)?([^;]+)/
+PACKAGE_STATEMENT = /\bpackage\s+([^;]+)/
+
+def hash_with_list
+  Hash.new { |hash, key| hash[key] = [] }
+end
+
+class DependenciesParser
+  TAGS = %w[
+    annotationProcessor
+    jacocoAgent
+    jacocoAnt
+    runtimeOnly
+    testRuntimeOnly
+  ]
+
+  def initialize rd
+    @map = hash_with_list
+
+    parse rd
+  end
+
+  def dependencies
+    @map.keys
+  end
+
+  def parse rd
+    tag = nil
+
+    rd.each_line { |line|
+      tag = parse_tag(line) || tag
+      dep = parse_dependency line
+      @map[dep] << tag if dep
+    }
+
+    @map.delete_if { |key, value| (value & TAGS).any? }
+  end
+
+  def parse_dependency str
+    if str.start_with?('+--- ', '\\--- ')
+      a = str.split[1].split(':')
+
+      return a[0..1].join(':') if a.size >= 2 && !a[1].end_with?('-bom')
+    end
+
+    false
+  end
+
+  def parse_tag str
+    str =~ /^[a-z]\w* - / && str.split[0]
+  end
+
+  def to_s
+    JSON.generate @map
+  end
+end
+
+class PackageMapper
+  def initialize str
+    @map = JSON.parse str
+  end
+
+  def invert
+    @map.invert
+  end
+
+  def unknown packages
+    packages - @map.keys
+  end
+
+  def to_s
+    JSON.generate @map
+  end
+end
+
+def drop str, pattern
+  str.split(pattern)[0...-1].join(pattern)
+end
+
+def extract_keys str, re
+  str.scan(re).map { |a| a[0].gsub(/\s+/, '') }.each { |key| yield key }
+end
+
+def match_path str, paths
+  until (str = drop(str, '.')).empty?
+    return str if paths.include? str
+  end
+
+  nil
+end
+
+def sanity_check keys
+  unless keys.empty?
+    LOGGER.fatal "unknown dependencies: #{keys.join ', '}"
+    exit 1
+  end
+end
+
+mapper = PackageMapper.new IO.read(File.join __dir__, 'packages.json')
+parser = DependenciesParser.new ARGF
+
+sanity_check mapper.unknown(parser.dependencies)
+
+imports = hash_with_list
+packages = {}
+
+Dir['src/**/*.java'].each { |fname|
+  str = IO.read fname
+
+  extract_keys(str, IMPORT_STATEMENT) { |key|
+    imports[key] << fname unless key.start_with? 'java.'
+  }
+
+  extract_keys(str, PACKAGE_STATEMENT) { |key| packages[key] = true }
+}
+
+imports.delete_if { |key, value| match_path key, packages }
+
+packages = Hash[parser.dependencies.collect { |key| [key, false] }]
+inverted = mapper.invert
+
+imports.each_pair { |key, value|
+  next unless str = inverted[match_path key, inverted]
+
+  if packages.include? str
+    packages[str] = true
+  else
+    LOGGER.warn "undeclared dependency: #{str}"
+  end
+}
+
+packages.reject { |key, value| value }.keys.each { |str|
+  LOGGER.warn "unused dependency: #{str}"
+}
