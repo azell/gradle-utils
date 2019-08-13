@@ -1,13 +1,21 @@
 {
   "com.fasterxml.jackson.core:jackson-annotations": "com.fasterxml.jackson.annotation",
+  "com.fasterxml.jackson.core:jackson-core": "com.fasterxml.jackson.core",
   "com.fasterxml.jackson.core:jackson-databind": "com.fasterxml.jackson.databind",
+  "com.fasterxml.jackson.datatype:jackson-datatype-jdk8": "com.fasterxml.jackson.datatype.jdk8",
+  "com.fasterxml.jackson.datatype:jackson-datatype-jsr310": "com.fasterxml.jackson.datatype.jsr310",
+  "com.fasterxml.jackson.module:jackson-module-parameter-names": "com.fasterxml.jackson.module.paramnames",
   "com.google.dagger:dagger": "dagger",
   "com.google.flogger:flogger": "com.google.common.flogger",
   "de.huxhorn.sulky:de.huxhorn.sulky.ulid": "de.huxhorn.sulky.ulid",
   "io.projectreactor:reactor-core": "reactor.core",
   "io.projectreactor:reactor-test": "reactor.test",
+  "javax.inject:javax.inject": "javax.inject",
+  "net.logstash.logback:logstash-logback-encoder": "net.logstash.logback",
   "org.assertj:assertj-core": "org.assertj.core",
   "org.immutables:value-annotations": "org.immutables.value",
   "org.junit.jupiter:junit-jupiter-api": "org.junit.jupiter.api",
-  "org.mockito:mockito-core": "org.mockito"
+  "org.mapstruct:mapstruct": "org.mapstruct",
+  "org.mockito:mockito-core": "org.mockito",
+  "org.slf4j:slf4j-api": "org.slf4j"
 }

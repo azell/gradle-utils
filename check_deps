@@ -97,8 +97,7 @@ end
 
 def sanity_check keys
   unless keys.empty?
-    LOGGER.fatal "unknown dependencies: #{keys.join ', '}"
-    exit 1
+    LOGGER.warn "unknown dependencies: #{keys.join ', '}"
   end
 end
 
@@ -126,7 +125,10 @@ packages = Hash[parser.dependencies.collect { |key| [key, false] }]
 inverted = mapper.invert
 
 imports.each_pair { |key, value|
-  next unless str = inverted[match_path key, inverted]
+  unless str = inverted[match_path key, inverted]
+    LOGGER.info "unknown import: #{key}"
+    next
+  end
 
   if packages.include? str
     packages[str] = true
