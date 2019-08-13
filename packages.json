@@ -14,8 +14,26 @@
   "net.logstash.logback:logstash-logback-encoder": "net.logstash.logback",
   "org.assertj:assertj-core": "org.assertj.core",
   "org.immutables:value-annotations": "org.immutables.value",
-  "org.junit.jupiter:junit-jupiter-api": "org.junit.jupiter.api",
+  "org.junit.jupiter:junit-jupiter": "org.junit.jupiter",
   "org.mapstruct:mapstruct": "org.mapstruct",
   "org.mockito:mockito-core": "org.mockito",
-  "org.slf4j:slf4j-api": "org.slf4j"
+  "org.slf4j:slf4j-api": "org.slf4j",
+  "org.springframework.boot:spring-boot-starter-actuator": [
+    "org.springframework.boot",
+    "org.springframework.core"
+  ],
+  "org.springframework.boot:spring-boot-starter-data-jpa": [
+    "javax.persistence",
+    "org.springframework.data.jpa"
+  ],
+  "org.springframework.boot:spring-boot-starter-test": [
+    "org.springframework.boot.test",
+    "org.springframework.test"
+  ],
+  "org.springframework.boot:spring-boot-starter-web": [
+    "org.springframework.boot",
+    "org.springframework.core",
+    "org.springframework.http",
+    "org.springframework.web"
+  ]
 }

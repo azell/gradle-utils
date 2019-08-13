@@ -64,10 +64,19 @@ end
 class PackageMapper
   def initialize str
     @map = JSON.parse str
+    @inv = hash_with_list
+
+    parse
   end
 
   def invert
-    @map.invert
+    @inv
+  end
+
+  def parse
+    @map.each_pair { |key, value|
+      Array(value).each { |path| @inv[path] << key }
+    }
   end
 
   def unknown packages
@@ -97,7 +106,7 @@ end
 
 def sanity_check keys
   unless keys.empty?
-    LOGGER.warn "unknown dependencies: #{keys.join ', '}"
+    LOGGER.warn "unknown dependencies: #{keys.sort.join ', '}"
   end
 end
 
@@ -125,15 +134,19 @@ packages = Hash[parser.dependencies.collect { |key| [key, false] }]
 inverted = mapper.invert
 
 imports.each_pair { |key, value|
-  unless str = inverted[match_path key, inverted]
+  a = inverted[match_path key, inverted]
+
+  if a.empty?
     LOGGER.info "unknown import: #{key}"
     next
   end
 
-  if packages.include? str
-    packages[str] = true
+  pkgs = a.select { |str| packages.include? str }
+
+  if pkgs.empty?
+    LOGGER.warn "undeclared dependency: #{a.sort.join ', '}"
   else
-    LOGGER.warn "undeclared dependency: #{str}"
+    pkgs.each { |str| packages[str] = true }
   end
 }
 
