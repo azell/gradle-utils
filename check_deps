@@ -159,12 +159,12 @@ imports.each_pair { |key, value|
     next
   end
 
-  sel = a.select { |str| packages.include? str }
+  keys = (a & packages.keys)
 
-  if sel.empty?
+  if keys.empty?
     LOGGER.warn "undeclared dependency: #{a.sort.join ', '}"
   else
-    sel.each { |str| packages[str] = true }
+    keys.each { |key| packages[key] = true }
   end
 }
 
