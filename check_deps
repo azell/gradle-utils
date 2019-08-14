@@ -11,6 +11,9 @@ def hash_with_list
   Hash.new { |hash, key| hash[key] = [] }
 end
 
+######################################################################
+# Gradle dependencies parser and filter
+######################################################################
 class DependenciesParser
   TAGS = %w[
     annotationProcessor
@@ -61,6 +64,9 @@ class DependenciesParser
   end
 end
 
+######################################################################
+# Package and imports path mapper
+######################################################################
 class PackageMapper
   def initialize str
     @map = JSON.parse str
@@ -88,6 +94,9 @@ class PackageMapper
   end
 end
 
+######################################################################
+# Helper functions
+######################################################################
 def drop str, pattern
   str.split(pattern)[0...-1].join(pattern)
 end
@@ -110,11 +119,17 @@ def sanity_check keys
   end
 end
 
+######################################################################
+# Check for unmapped packages
+######################################################################
 mapper = PackageMapper.new IO.read(File.join __dir__, 'packages.json')
 parser = DependenciesParser.new ARGF
 
 sanity_check mapper.unknown(parser.dependencies)
 
+######################################################################
+# Parse Java files for import and package statements
+######################################################################
 imports = hash_with_list
 packages = {}
 
@@ -130,6 +145,9 @@ Dir['src/**/*.java'].each { |fname|
 
 imports.delete_if { |key, value| match_path key, packages }
 
+######################################################################
+# Check for undeclared and unused packages
+######################################################################
 packages = Hash[parser.dependencies.collect { |key| [key, false] }]
 inverted = mapper.invert
 
@@ -141,12 +159,12 @@ imports.each_pair { |key, value|
     next
   end
 
-  pkgs = a.select { |str| packages.include? str }
+  sel = a.select { |str| packages.include? str }
 
-  if pkgs.empty?
+  if sel.empty?
     LOGGER.warn "undeclared dependency: #{a.sort.join ', '}"
   else
-    pkgs.each { |str| packages[str] = true }
+    sel.each { |str| packages[str] = true }
   end
 }
 
