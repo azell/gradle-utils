@@ -5,5 +5,5 @@ set -euo pipefail
 files="$(find . -name '*.gradle' -type f)"
 
 for fname in $(awk -F: 'NF == 4 { sub(/^[ \t]+/, ""); print $1 }' gradle/dependencies.gradle); do
-  grep -Fqw "libraries.$fname" $files || echo "$fname"
+  grep -Fqw "Libs.$fname" $files || echo "$fname"
 done
