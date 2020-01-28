@@ -1,2 +1,2 @@
-FROM gradle:6.0.1-jdk11
+FROM gradle:6.1.1-jdk11
 USER gradle
